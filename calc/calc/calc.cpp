@@ -146,7 +146,7 @@ public:
 
 int main() {
     std::string input;
-    std::cin >> input;
+    std::getline(std::cin, input);;
     Interpreter interpreter(input);
     std::cout << interpreter.calc();
     return 0;
