@@ -3,10 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include <vector>
 #define INTEGER "INTEGER"
 #define PLUS "PLUS"
-#define EOF "EOF"
 #define MINUS "MINUS"
 
 class Token {
@@ -22,13 +20,11 @@ public:
 
 };
 
-
 std::ostream& operator<< (std::ostream& out, const Token& token)
 {
     out << "Token type: " << token.type << "\n" << "Token value: " << token.value << "\n";
     return out;
 }
-
 
 class Interpreter {
 
