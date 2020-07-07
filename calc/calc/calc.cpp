@@ -40,7 +40,7 @@ public:
         curr_token = nullptr;
         script = scr;
         curr_character = script[position];
-    }
+    };
 
     void error() {
         std::cout << "Error parsing input" << "\n";
@@ -74,7 +74,7 @@ public:
     int to_integer(std::string number) {
         int result = 0;
         for (int i = 0; i < number.size(); i++) {
-            result += int((number[i]) - 48) * std::pow(10, number.size() - 1 - i);
+            result += (int(number[i]) - 48) * std::pow(10, number.size() - 1 - i);
         }
         return result;
     }
@@ -102,11 +102,17 @@ public:
             error();
         }
         return nullptr;
-    };
+    }
 
-    void process(Token** token, std::string expected_type) {
-        if ((*token)->type == expected_type) {
-            *token = next_token();
+    int term() {
+        int val = curr_token->value;
+        process(INTEGER);
+        return val;
+    }
+
+    void process(std::string expected_type) {
+        if (curr_token->type == expected_type) {
+            curr_token = next_token();
         }
         else {
             error();
@@ -116,26 +122,19 @@ public:
     int calc() {
         curr_token = next_token();
 
-        Token* left_side = curr_token;
-        process(&curr_token, INTEGER);
-        
-        Token* op = curr_token;
-        if (op -> type == PLUS) {
-            process(&curr_token, PLUS);
-        }
-        else {
-            process(&curr_token, MINUS);
-        }
+        int result = term();
 
-        Token* right_side = curr_token;
-        process(&curr_token, INTEGER);
-
-        if (op->type == PLUS) {
-            return left_side->value + right_side->value;
+        while (curr_token && (curr_token->type == PLUS || curr_token->type == MINUS)) {
+            if (curr_token->type == PLUS) {
+                process(PLUS);
+                result += term();
+            }
+            else if (curr_token->type == MINUS) {
+                process(MINUS);
+                result -= term();
+            }
         }
-        else {
-            return left_side->value - right_side->value;
-        }
+        return result;
     }
 
 };
