@@ -6,6 +6,8 @@
 #define INTEGER "INTEGER"
 #define PLUS "PLUS"
 #define MINUS "MINUS"
+#define MUL "MUL"
+#define DIV "DIV"
 
 class Token {
 
@@ -37,9 +39,9 @@ private:
 public:
     Interpreter(std::string scr) {
         position = 0;
-        curr_token = nullptr;
         script = scr;
         curr_character = script[position];
+        curr_token = next_token();
     };
 
     void error() {
@@ -99,15 +101,43 @@ public:
 
                 return token;
             }
+            if (curr_character == '/') {
+                Token* token = new Token(DIV, curr_character);
+                advance();
+                return token;
+            }
+            if (curr_character == '*') {
+                Token* token = new Token(MUL, curr_character);
+                advance();
+                return token;
+            }
+
             error();
         }
         return nullptr;
     }
 
-    int term() {
+    int factor() {
         int val = curr_token->value;
         process(INTEGER);
         return val;
+    }
+
+    int term() {
+
+        int result = factor();
+
+        while (curr_token && (curr_token->type == DIV || curr_token->type == MUL)) {
+            if (curr_token->type == DIV) {
+                process(DIV);
+                result /= factor();
+            }
+            else if (curr_token->type == MUL) {
+                process(MUL);
+                result *= factor();
+            }
+        }
+        return result;
     }
 
     void process(std::string expected_type) {
@@ -120,7 +150,6 @@ public:
     }
 
     int calc() {
-        curr_token = next_token();
 
         int result = term();
 
