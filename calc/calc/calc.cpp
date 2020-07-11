@@ -8,6 +8,9 @@
 #define MINUS "MINUS"
 #define MUL "MUL"
 #define DIV "DIV"
+#define LPAR "LPAR"
+#define RPAR "RPAR"
+
 
 class Token {
 
@@ -111,6 +114,16 @@ public:
                 advance();
                 return token;
             }
+            if (curr_character == ')') {
+                Token* token = new Token(RPAR, curr_character);
+                advance();
+                return token;
+            }
+            if (curr_character == '(') {
+                Token* token = new Token(LPAR, curr_character);
+                advance();
+                return token;
+            }
 
             error();
         }
@@ -118,8 +131,16 @@ public:
     }
 
     int factor() {
-        int val = curr_token->value;
-        process(INTEGER);
+        int val;
+        if (curr_token->type == INTEGER) {
+            val = curr_token->value;
+            process(INTEGER);
+        }
+        else {
+            process(LPAR);
+            val = expression();
+            process(RPAR);
+        }
         return val;
     }
 
@@ -146,10 +167,10 @@ public:
         }
         else {
             error();
-        }
+        } 
     }
 
-    int calc() {
+    int expression() {
 
         int result = term();
 
@@ -172,7 +193,6 @@ int main() {
     std::string input;
     std::getline(std::cin, input);;
     Interpreter interpreter(input);
-    std::cout << interpreter.calc();
+    std::cout << interpreter.expression();
     return 0;
-
 }
