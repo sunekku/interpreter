@@ -10,6 +10,8 @@
 #define DIV "DIV"
 #define LPAR "LPAR"
 #define RPAR "RPAR"
+#define OP "OP"
+#define INT "INT"
 
 
 class Token {
@@ -23,6 +25,44 @@ public:
     }
     friend std::ostream& operator<< (std::ostream& out, const Token& token);
 
+};
+
+class AST {
+
+};
+
+class Num : AST {
+    Token *integer;
+    int val;
+    Num(Token* num, int val) {
+        val = val;
+        integer = num;
+    }
+};
+
+class Op : AST {
+    
+public:
+    Token* op;
+    Op(Token* ope) {
+        op = ope;
+    }
+};
+
+class Node {
+public:
+    std::string type;
+    Num* num;
+    Op* op;
+    Node* right;
+    Node* left;
+    Node(std::string t, Num* n, Op* o) {
+        type = t;
+        num = n;
+        op = o;
+        right = nullptr;
+        left = nullptr;
+    }
 };
 
 std::ostream& operator<< (std::ostream& out, const Token& token)
@@ -130,35 +170,41 @@ public:
         return nullptr;
     }
 
-    int factor() {
-        int val;
+    Node *factor() {
+        Node* node;
         if (curr_token->type == INTEGER) {
-            val = curr_token->value;
+            Token *token = curr_token;
             process(INTEGER);
+            Num* num = new Num(token, token->value);
+            node = new Node(INT, num, nullptr);
+            return node;
         }
         else {
             process(LPAR);
-            val = expression();
+            node = expression();
             process(RPAR);
+            return node;
         }
-        return val;
+        
     }
 
-    int term() {
+    Node* term() {
 
-        int result = factor();
+        Node *node = factor();
 
         while (curr_token && (curr_token->type == DIV || curr_token->type == MUL)) {
+            Token* token = curr_token;
             if (curr_token->type == DIV) {
                 process(DIV);
-                result /= factor();
             }
             else if (curr_token->type == MUL) {
                 process(MUL);
-                result *= factor();
             }
+            Node* new_node = new Node(OP, nullptr, token);
+            new_node->left = node;
+            new_node->right = factor();
         }
-        return result;
+        return node;
     }
 
     void process(std::string expected_type) {
@@ -170,21 +216,23 @@ public:
         } 
     }
 
-    int expression() {
+    Node *expression() {
 
-        int result = term();
+        Node *node = term();
 
         while (curr_token && (curr_token->type == PLUS || curr_token->type == MINUS)) {
+            Token* token = curr_token;
             if (curr_token->type == PLUS) {
                 process(PLUS);
-                result += term();
             }
             else if (curr_token->type == MINUS) {
                 process(MINUS);
-                result -= term();
             }
+            Node* new_node = new Node(OP, nullptr, token);
+            new_node->left = node;
+            new_node->right = term();
         }
-        return result;
+        return node;
     }
 
 };
