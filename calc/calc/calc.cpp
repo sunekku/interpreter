@@ -235,6 +235,19 @@ public:
         return node;
     }
 
+    int calc(Node *root) {
+        if (!(root->left) && !(root->right))
+            return root->num->value;
+        if (root->op->op->value == MINUS)
+            return calc(root->left) - calc(root->right);
+        if (root->op->op->value == PLUS)
+            return calc(root->left) + calc(root->right);
+        if (root->op->op->value == DIV)
+            return calc(root->left) / calc(root->right);
+        if (root->op->op->value == MUL)
+            return calc(root->left) * calc(root->right);
+    }
+
 };
 
 int main() {
